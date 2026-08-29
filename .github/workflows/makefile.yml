@@ -1,27 +1,28 @@
-name: Makefile CI
+name: Build Switch Homebrew
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
+  workflow_dispatch: {}
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
+    container: devkitpro/devkita64:latest
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    - name: configure
-      run: ./configure
+      - name: Compile
+        shell: bash
+        run: |
+          make -j$(nproc)
 
-    - name: Install dependencies
-      run: make
-
-    - name: Run check
-      run: make check
-
-    - name: Run distcheck
-      run: make distcheck
+      - name: Upload NRO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gba-emu-switch-nro
+          path: '*.nro'
+          if-no-files-found: error
